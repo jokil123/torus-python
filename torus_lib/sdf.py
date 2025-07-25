@@ -5,13 +5,26 @@ from torus_lib.vector import Vector3
 
 
 class SDF(ABC):
+    def __init__(self, epsilon) -> None:
+        super().__init__()
+        self.epsilon = epsilon
+
     @abstractmethod
     def distance(self, sample_pos: Vector3) -> float:
         pass
 
-    @abstractmethod
     def normal(self, sample_pos: Vector3) -> Vector3:
-        pass
+        px = sample_pos.x
+        py = sample_pos.y
+        pz = sample_pos.z
+        e = self.epsilon
+
+        """default implementation using ∇f"""
+        nx = self.distance(Vector3(px + e, py, pz) - Vector3(px - e, py, pz))
+        ny = self.distance(Vector3(px, py + e, pz) - Vector3(px, py - e, pz))
+        nz = self.distance(Vector3(px, py, pz + e) - Vector3(px, py, pz - e))
+
+        return Vector3(nx, ny, nz)
 
 
 class TorusSDF(SDF):

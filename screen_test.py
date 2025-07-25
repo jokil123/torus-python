@@ -1,7 +1,7 @@
 from random import random
 import time
 from torus_lib.screen import Color, ConsoleDisplay
-from torus_lib.sdf import SphereSDF, TorusSDF
+from torus_lib.sdf import TorusSDF
 from torus_lib.vector import Vector3
 from timeit import default_timer
 
@@ -11,12 +11,8 @@ start = default_timer()
 
 while True:
     t = default_timer() - start
-
     colors: list[list[Color]] = []
-
     H, W = d.get_resolution()
-
-    # print(d.get_resolution())
 
     sdf = TorusSDF(
         Vector3(W / 2, H / (2 * d.get_pixel_ratio()), 00),

@@ -1,6 +1,5 @@
-import itertools
-from turtle import position
 from typing import TypedDict
+from torus_lib.renderer import MarchConfig
 from torus_lib.sdf import SDF
 from torus_lib.vector import Vector3
 
@@ -10,69 +9,26 @@ class HitInfo(TypedDict):
     normal: Vector3
 
 
-def march_ray(
-    position: Vector3,
-    direction: Vector3,
-    sdf: SDF,
-    d_min: float,
-    d_max: float,
-    max_iterations: int,
-) -> HitInfo | None:
+class RayInfo(TypedDict):
+    position: Vector3
+    direction: Vector3
+
+
+def march_ray(ray_info: RayInfo, sdf: SDF, config: MarchConfig) -> HitInfo | None:
     """Marches a single ray, returns None if nothing was hit, otherwise information about the hit"""
 
-    pos = position
+    current_pos = ray_info["position"]
 
-    for i in range(0, max_iterations):
-        distance = sdf.distance(pos)
+    for i in range(0, config["max_iterations"]):
+        distance = sdf.distance(current_pos)
         # print(f"pos: {self.position}, distance: {distance}")
-        pos += direction * distance
+        current_pos += ray_info["direction"] * distance
 
-        if distance > d_max:
+        if distance > config["d_max"]:
             return None
 
-        if distance < d_min:
-            return {"position": position, "normal": sdf.normal(position)}
-
-
-class Ray:
-    """Ray class"""
-
-    def __init__(self, position: Vector3, direction: Vector3):
-        self.start_position = position
-        self.position = position
-        self.direction = direction.normalized()
-
-    def march(self, sdf: SDF):
-        distance = sdf.distance(self.position)
-        # print(f"pos: {self.position}, distance: {distance}")
-        self.position = self.position + self.direction * distance
-        return distance
-
-
-class RayMarcher:
-    """Ray marcher marches the rays"""
-
-    def __init__(
-        self,
-        sdf: SDF,
-        rays: list[Ray],
-        max_iterations: int,
-        d_min: float,
-        d_max: float,
-    ):
-        self.sdf = sdf
-        self.rays = rays
-        self.max_iterations = max_iterations
-        self.d_min = d_min
-        self.d_max = d_max
-
-    def march_all(self):
-        for ray in self.rays:
-            for i in range(0, self.max_iterations):
-                d = ray.march(self.sdf)
-                if not self.d_min < d < self.d_max:
-                    print(f"Converged (or Diverged) in {i} Steps")
-                    break
+        if distance < config["d_min"]:
+            return {"position": current_pos, "normal": sdf.normal(current_pos)}
 
 
 class Camera:
@@ -81,17 +37,14 @@ class Camera:
     def __init__(
         self,
         fov: float,
-        resolution: int,
-        aspect_ratio: float,
-        pixel_aspect: float,
     ):
         self.fov = fov
-        self.resolution = resolution
-        self.aspect_ratio = aspect_ratio
-        self.pixel_aspect = pixel_aspect
+        self.resolution = 1
+        self.aspect_ratio = 1
+        self.pixel_aspect = 1
 
-    def generate_rays(self) -> list[list[Ray]]:
-        rays: list[list[Ray]] = []
+    def generate_rays_info(self) -> list[list[RayInfo]]:
+        rays: list[list[RayInfo]] = []
         rays_v = self.resolution
         rays_h = int(rays_v * self.aspect_ratio * self.pixel_aspect)
 
@@ -111,11 +64,18 @@ class Camera:
                     Vector3.UP, phi_h
                 )
 
-                ray = Ray(Vector3.ZERO, dir)
+                ray: RayInfo = {"position": Vector3.ZERO, "direction": dir}
 
                 rays[v].append(ray)
 
         return rays
 
-    # def get_rays(self) -> list[Ray]:
-    #     return list(itertools.chain.from_iterable(self.rays))
+    def set_resolution(self, h: int, w: int):
+        if h < 0 or w < 0:
+            raise ValueError("Height or width less than 0")
+
+        self.resolution = h
+        self.aspect_ratio = w / h
+
+    def set_pixelaspect(self, a: float):
+        self.pixel_aspect = a
