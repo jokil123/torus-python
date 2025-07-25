@@ -1,5 +1,7 @@
 import math
 import unittest
+
+import numpy as np
 from torus_lib.vector import Vector3
 
 
@@ -57,14 +59,14 @@ class Vector3Tests(unittest.TestCase):
     def test_mul(self):
         a = Vector3(1, 2, 3)
         b = Vector3(-2, 0, 5)
-        self.assertEqual(a * 2, Vector3(2, 4, 6))
+        self.assertEqual(a * -2, Vector3(-2, -4, -6))
         self.assertEqual(b * 0.5, Vector3(-1, 0, 2.5))
 
     def test_truediv(self):
         a = Vector3(1, 2, 3)
         b = Vector3(-2, 0, 5)
 
-        self.assertEqual(a / 2, Vector3(0.5, 1, 1.5))
+        self.assertEqual(a / -2, Vector3(-0.5, -1, -1.5))
         self.assertEqual(b / 0.5, Vector3(-4, 0, 10))
 
     def test_dot(self):
@@ -107,8 +109,55 @@ class Vector3Tests(unittest.TestCase):
 
         self.assertEqual(a.normalized().x, 1 / math.sqrt(14))
         self.assertEqual(Vector3.UP.normalized().y, 1)
+        self.assertEqual(Vector3.DOWN.normalized().y, -1)
         self.assertEqual(Vector3.ONE.normalized().y, 1 / math.sqrt(3))
         self.assertRaises(ZeroDivisionError, lambda: Vector3.ZERO.normalized())
+
+    def test_rotate(self):
+        a = Vector3(1, 2, 3)
+
+        a_rot = a.rotate(Vector3.UP, np.pi / 2)
+        a_rot_ref = Vector3(3, 2, -1)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
+
+        a_rot = a.rotate(Vector3.DOWN, np.pi / 2)
+        a_rot_ref = Vector3(-3, 2, 1)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
+
+        a_rot = a.rotate(Vector3.UP, -np.pi / 2)
+        a_rot_ref = Vector3(-3, 2, 1)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
+
+        a_rot = a.rotate(Vector3.RIGHT, np.pi / 2)
+        a_rot_ref = Vector3(1, -3, 2)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
+
+        a_rot = a.rotate(Vector3.RIGHT, np.pi)
+        a_rot_ref = Vector3(1, -2, -3)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
+
+        a = Vector3(0.5, 2, 0)
+        a_rot = a.rotate(Vector3.RIGHT, np.pi / 3)
+        a_rot_ref = Vector3(0.5, np.cos(np.pi / 3) * 2, np.sin(np.pi / 3) * 2)
+
+        self.assertAlmostEqual(a_rot.x, a_rot_ref.x)
+        self.assertAlmostEqual(a_rot.y, a_rot_ref.y)
+        self.assertAlmostEqual(a_rot.z, a_rot_ref.z)
 
 
 if __name__ == "__main__":

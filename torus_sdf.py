@@ -1,22 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from torus_lib.sdf import TorusSDF
 from torus_lib.vector import Vector3
 
 
-def torus_sdf(x, y, z, R, r):
-    pass
-
-
-def f(x, y):
-    r = 1
-    return np.sqrt(x**2 + y**2) - r
-
-
-x = np.linspace(-1, 1, 21)
-y = np.linspace(-1, 1, 21)
+x = np.linspace(-1, 1, 100)
+y = np.linspace(-1, 1, 100)
 
 X, Y = np.meshgrid(x, y)
-Z = f(X, Y)
+# Z = f(X, Y)
+
+torus_sdf = TorusSDF(Vector3.ZERO, Vector3.UP, 0.5, 0.15)
+
+d = lambda x, y: torus_sdf.distance(Vector3(x, y, 0))
+
+Z = d(X, Y)
 
 plt.figure(figsize=(10, 5))
 # The 'shading=' argument is important for aligning the pixels properly.

@@ -1,7 +1,8 @@
 from __future__ import annotations
-from math import sqrt
+import math
+from typing import Self
 
-from numpy import vectorize
+import numpy as np
 
 
 class Vector3:
@@ -24,18 +25,18 @@ class Vector3:
 
         self.xyz = (x, y, z)
 
-    @staticmethod
-    def fromTuple(t: tuple[float, float, float]) -> Vector3:
+    @classmethod
+    def fromTuple(cls, t: tuple[float, float, float]) -> Self:
         """Alternative constructor from a tuple"""
-        return Vector3(t[0], t[1], t[2])
+        return cls(t[0], t[1], t[2])
 
-    @staticmethod
-    def fromList(l: list[float]) -> Vector3:
+    @classmethod
+    def fromList(cls, l: list[float]) -> Self:
         """Alternative constructor from a list"""
         if len(l) != 3:
             raise ValueError("List must be length 3")
 
-        return Vector3(l[0], l[1], l[2])
+        return cls(l[0], l[1], l[2])
 
     def __eq__(self, o: Vector3) -> bool:
         if not isinstance(o, Vector3):
@@ -43,33 +44,48 @@ class Vector3:
 
         return self.x == o.x and self.y == o.y and self.z == o.z
 
-    def __add__(self, o: Vector3) -> Vector3:
-        return Vector3(self.x + o.x, self.y + o.y, self.z + o.z)
+    def __add__(self, o: Vector3) -> Self:
+        return type(self)(self.x + o.x, self.y + o.y, self.z + o.z)
 
-    def __sub__(self, o: Vector3) -> Vector3:
-        return Vector3(self.x - o.x, self.y - o.y, self.z - o.z)
+    def __sub__(self, o: Vector3) -> Self:
+        return type(self)(self.x - o.x, self.y - o.y, self.z - o.z)
 
-    def __mul__(self, s: float) -> Vector3:
-        return Vector3(self.x * s, self.y * s, self.z * s)
+    def __mul__(self, s: float) -> Self:
+        return type(self)(self.x * s, self.y * s, self.z * s)
 
-    def __truediv__(self, s: float) -> Vector3:
-        return Vector3(self.x / s, self.y / s, self.z / s)
+    def __truediv__(self, s: float) -> Self:
+        return type(self)(self.x / s, self.y / s, self.z / s)
 
     def dot(self, o: Vector3) -> float:
         return self.x * o.x + self.y * o.y + self.z * o.z
 
-    def cross(self, o: Vector3) -> Vector3:
+    def cross(self, o: Vector3) -> Self:
         cx = self.y * o.z - self.z * o.y
         cy = -(self.x * o.z - self.z * o.x)
         cz = self.x * o.y - self.y * o.x
 
-        return Vector3(cx, cy, cz)
+        return type(self)(cx, cy, cz)
 
     def mag(self) -> float:
-        return sqrt(self.x**2 + self.y**2 + self.z**2)
+        try:
+            mag = math.sqrt((self.x**2) + (self.y**2) + (self.z**2))
+            return mag
+        except TypeError as e:
+            mag = np.sqrt((self.x**2) + (self.y**2) + (self.z**2))
+            return mag
 
-    def normalized(self) -> Vector3:
+    def normalized(self) -> Self:
         return self / self.mag()
+
+    def rotate(self, axis: Vector3, angle: float) -> Vector3:
+        """Rotate a vector around another vector by angle (in radians)"""
+        """This Function uses Rodrigues formula (https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula)"""
+
+        return (
+            self * np.cos(angle)
+            + axis.cross(self) * np.sin(angle)
+            + axis * (axis.dot(self)) * (1 - np.cos(angle))
+        )
 
     def __repr__(self) -> str:
         return f"Vector3({self.x}, {self.y}, {self.z})"
