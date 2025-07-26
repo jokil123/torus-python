@@ -1,12 +1,11 @@
 import math
 import time
 from timeit import default_timer
-from torus_lib.ray_marcher import Camera, HitInfo
+from torus_lib.ray_marcher import Camera
 from torus_lib.renderer import MarchConfig, Renderer, Scene
 from torus_lib.screen import Color, ConsoleDisplay
 from torus_lib.sdf import SDF, SphereSDF, TorusSDF
 from torus_lib.shader import PhongShader, Shader
-from torus_lib.util import remap
 from torus_lib.vector import Vector3
 
 
@@ -58,6 +57,7 @@ def main():
 
         # print("frame drawn")
         # time.sleep(0.1)
+        # print(dt)  # Roughly 90 ms
 
 
 if __name__ == "__main__":

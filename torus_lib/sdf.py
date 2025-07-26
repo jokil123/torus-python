@@ -50,6 +50,9 @@ class TorusSDF(SDF):
 
         return distance
 
+    def set_dir(self, dir: Vector3):
+        self.dir = dir.normalized()
+
 
 class SphereSDF(SDF):
     def __init__(self, pos: Vector3, radius: float):
