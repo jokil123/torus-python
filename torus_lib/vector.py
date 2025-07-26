@@ -87,6 +87,15 @@ class Vector3:
             + axis * (axis.dot(self)) * (1 - np.cos(angle))
         )
 
+    def tangents(self) -> tuple[Vector3, Vector3]:
+        if self.dot(Vector3.UP) == 0:
+            return (Vector3.FORWARD, Vector3.RIGHT)
+
+        cotangent = self.cross(Vector3.UP)
+        tangent = self.cross(cotangent)
+
+        return (tangent, cotangent)
+
     def __repr__(self) -> str:
         return f"Vector3({self.x}, {self.y}, {self.z})"
 

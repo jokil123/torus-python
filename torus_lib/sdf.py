@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 import sys
 import numpy as np
@@ -18,17 +19,19 @@ class SDF(ABC):
         py = sample_pos.y
         pz = sample_pos.z
         e = self.epsilon
+        dist = self.distance
 
         """default implementation using ∇f"""
-        nx = self.distance(Vector3(px + e, py, pz) - Vector3(px - e, py, pz))
-        ny = self.distance(Vector3(px, py + e, pz) - Vector3(px, py - e, pz))
-        nz = self.distance(Vector3(px, py, pz + e) - Vector3(px, py, pz - e))
+        nx = dist(Vector3(px + e, py, pz)) - dist(Vector3(px - e, py, pz))
+        ny = dist(Vector3(px, py + e, pz)) - dist(Vector3(px, py - e, pz))
+        nz = dist(Vector3(px, py, pz + e)) - dist(Vector3(px, py, pz - e))
 
-        return Vector3(nx, ny, nz)
+        return Vector3(nx, ny, nz).normalized()
 
 
 class TorusSDF(SDF):
     def __init__(self, pos: Vector3, dir: Vector3, R: float, r: float):
+        super().__init__(0.01)
         self.pos = pos
         self.dir = dir.normalized()
         self.R = R
@@ -38,8 +41,10 @@ class TorusSDF(SDF):
         deltaPos = sample_pos - self.pos
 
         dP_ortho = deltaPos - (self.dir * deltaPos.dot(self.dir))
+        if dP_ortho.mag() == 0:
+            dP_ortho, _ = dP_ortho.tangents()
 
-        closest_ring_pos = (dP_ortho / dP_ortho.mag()) * self.R
+        closest_ring_pos = (dP_ortho.normalized()) * self.R
 
         distance = (deltaPos - closest_ring_pos).mag() - self.r
 
@@ -48,6 +53,7 @@ class TorusSDF(SDF):
 
 class SphereSDF(SDF):
     def __init__(self, pos: Vector3, radius: float):
+        super().__init__(0.01)
         self.pos = pos
         self.radius = radius
 

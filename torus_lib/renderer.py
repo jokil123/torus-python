@@ -1,14 +1,11 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TypedDict
+from torus_lib.dicts import MarchConfig
 from torus_lib.ray_marcher import Camera, HitInfo, march_ray
 from torus_lib.screen import Color, Display
 from torus_lib.sdf import SDF
-
-
-class Shader(ABC):
-    @abstractmethod
-    def render_hit(self, hit: HitInfo | None) -> Color:
-        pass
+from torus_lib.shader import Shader
 
 
 class Scene(ABC):
@@ -29,12 +26,6 @@ class Scene(ABC):
         pass
 
 
-class MarchConfig(TypedDict):
-    d_min: float
-    d_max: float
-    max_iterations: int
-
-
 class Renderer:
     def __init__(self, scene: Scene, display: Display, config: MarchConfig):
         self.scene = scene
@@ -52,7 +43,7 @@ class Renderer:
 
         for h in range(0, len(rays)):
             c.append([])
-            for w in range(0, len(rays)):
+            for w in range(0, len(rays[h])):
                 hit_info = march_ray(rays[h][w], self.scene.get_sdf(), self.config)
                 color = self.scene.get_shader().render_hit(hit_info)
 

@@ -4,6 +4,7 @@ import os
 import sys
 import time
 
+from torus_lib.util import clamp
 from torus_lib.vector import Vector3
 
 import sys
@@ -31,8 +32,17 @@ def clear_last_lines(n, m):
 
 
 class Color(Vector3):
+    def __init__(self, x: float, y: float, z: float):
+        super().__init__(x, y, z)
+        self.r = x
+        self.g = y
+        self.b = z
+
     def luminance(self) -> float:
         return self.dot(Color.WHITE / 3)
+
+    def clamp(self) -> Color:
+        return Color(clamp(0, 1, self.r), clamp(0, 1, self.g), clamp(0, 1, self.b))
 
     BLACK: Color
     WHITE: Color
@@ -87,13 +97,16 @@ class ConsoleDisplay(Display):
             if h != len(data) - 1:
                 content += "\n"
 
+        # print(self.display.get_resolution())
+        # print(f"({len(data)}, {len(data[0])})")
+
         print(content, end="")
 
     @staticmethod
     def __color_to_character(col: Color) -> str:
-        CHARS = (
-            """ .'`^",:;Il!i><~+_-?][}{1)(|\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"""
-        )
+        CHARS = """ .'`^",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"""
+        # CHARS = """ 0123456789"""
+        # CHARS = """ .:-=+*#%@"""
 
         lum = max(0, min(1, col.luminance()))
 
